@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Publicidad"/>
+<title>📋 Gestión Publicidad</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1117;color:#e2e8f0;font-family:'Courier New',monospace;min-height:100vh;padding-bottom:90px}
+input,textarea,select,button{font-family:'Courier New',monospace;outline:none;font-size:14px}
+.inp{width:100%;padding:11px 12px;background:#0a0d14;border:1.5px solid #2d3448;border-radius:8px;color:#e2e8f0;margin-bottom:10px;display:block}
+.inp:focus{border-color:#f59e0b}
+textarea.inp{resize:vertical;min-height:55px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#2d3448;border-radius:4px}
+#nav{position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;border-top:2px solid #252d40;display:flex;z-index:100}
+.nav-btn{flex:1;padding:10px 4px 8px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#475569;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.5px}
+.nav-btn.active{color:#f59e0b}
+.nav-btn .ico{font-size:20px;line-height:1}
+#header{background:linear-gradient(135deg,#1a1f2e 0%,#0f1117 100%);border-bottom:2px solid #f59e0b;padding:14px 16px 12px;position:sticky;top:0;z-index:99}
+#header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.page{display:none;max-width:640px;margin:0 auto;padding:0 16px}
+.page.active{display:block}
+.card{background:#1a1f2e;border:1.5px solid #252d40;border-radius:12px;padding:16px;margin-bottom:12px}
+.card-title{font-size:11px;color:#f59e0b;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.btn{padding:12px;border:none;border-radius:8px;font-weight:900;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:#f59e0b;color:#0f1117}
+.btn-green{background:#0d2818;color:#4ade80;border:1.5px solid #16a34a}
+.btn-blue{background:#0d1a2e;color:#93c5fd;border:1.5px solid #3b82f6}
+.btn-red{background:#2e0d0d;color:#f87171;border:1.5px solid #7f1d1d}
+.btn-gray{background:#252d40;color:#94a3b8;border:none}
+.btn-sm{padding:7px 10px;font-size:11px;width:auto;border-radius:6px}
+.btn-row{display:flex;gap:8px;margin-top:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.client-card{background:#141824;border:1.5px solid #252d40;border-radius:12px;overflow:hidden;margin-bottom:10px}
+.client-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#1a1f2e;gap:8px;user-select:none;-webkit-user-select:none}
+.pedido-item{background:#1a1f2e;border:1px solid #252d40;border-left:3px solid #f59e0b;border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.abono-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1a1f2e;font-size:12px}
+.balance-bar{height:5px;background:#252d40;border-radius:3px;margin:6px 0 4px;overflow:hidden}
+.balance-fill{height:100%;border-radius:3px;transition:width 0.4s}
+.chip{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700}
+.sug-box{position:absolute;top:100%;left:0;right:0;background:#1e2536;border:1px solid #2d3448;border-radius:0 0 8px 8px;z-index:50;max-height:120px;overflow-y:auto}
+.sug-item{padding:8px 12px;font-size:13px;cursor:pointer;color:#93c5fd;border-bottom:1px solid #2d3448}
+.modal-bg{position:fixed;inset:0;background:#00000099;display:flex;align-items:center;justify-content:center;z-index:300;padding:16px}
+.modal-box{background:#1a1f2e;border-radius:14px;padding:20px;max-width:360px;width:100%;max-height:90vh;overflow-y:auto}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:700;z-index:500;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+.sec-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;margin-top:4px}
+.usd-wrap{position:relative;margin-bottom:10px}
+.usd-sym{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#10b981;font-weight:900;font-size:15px;pointer-events:none}
+.usd-inp{padding-left:26px!important;margin-bottom:0!important}
+.campo-label{font-size:11px;color:#64748b;margin-bottom:4px}
+
+/* ITEMS LIST */
+.item-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#0f1117;border:1px solid #252d40;border-radius:8px;margin-bottom:6px;gap:8px}
+.item-desc{flex:1;min-width:0}
+.item-price{font-size:14px;font-weight:900;color:#4ade80;flex-shrink:0}
+.total-bar{background:#0d2818;border:1.5px solid #16a34a;border-radius:10px;padding:12px 14px;margin-top:8px}
+.divider{border:none;border-top:1px solid #252d40;margin:12px 0}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-inner">
+    <div>
+      <div style="font-size:10px;color:#f59e0b;letter-spacing:2px;text-transform:uppercase" id="hdr-sub">Agencia de Publicidad</div>
+      <div style="font-size:18px;font-weight:900;color:#fff" id="hdr-title">📋 Gestión</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:10px;color:#64748b">Por cobrar</div>
+      <div style="font-size:18px;font-weight:900;color:#f59e0b" id="hdr-total">$0.00</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COTIZADOR ═══ -->
+<div class="page active" id="page-cotizador" style="padding-top:16px">
+  <div class="card">
+    <div class="card-title">📐 Cotizador</div>
+
+    <!-- Cliente -->
+    <div class="sec-label">Cliente</div>
+    <div style="position:relative;margin-bottom:12px">
+      <input class="inp" id="cot-cliente" placeholder="Nombre del cliente *" oninput="showCotSugs()" style="margin-bottom:0"/>
+      <div class="sug-box" id="cot-sug" style="display:none"></div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- FORMULARIO DE ÍTEM -->
+    <div class="sec-label">➕ Agregar ítem</div>
+
+    <div class="sec-label" style="margin-top:8px">Descripción</div>
+    <textarea class="inp" id="item-desc" placeholder="Ej: Lona fachada, vinil ventana..."></textarea>
+
+    <div class="grid2">
+      <div>
+        <div class="campo-label">Ancho (m) <span style="color:#475569">opcional</span></div>
+        <input class="inp" id="item-ancho" type="number" placeholder="0.00" step="0.01" style="margin-bottom:0"/>
+      </div>
+      <div>
+        <div class="campo-label">Alto (m) <span style="color:#475569">opcional</span></div>
+        <input class="inp" id="item-alto" type="number" placeholder="0.00" step="0.01" style="margin-bottom:0"/>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <div class="campo-label">Precio (USD)</div>
+        <div class="usd-wrap">
+          <span class="usd-sym">$</span>
+          <input class="inp usd-inp" id="item-precio" type="number" placeholder="0.00"/>
+        </div>
+      </div>
+      <div>
+        <div class="campo-label">Cantidad</div>
+        <input class="inp" id="item-cantidad" type="number" value="1" min="1" style="margin-bottom:0"/>
+      </div>
+    </div>
+
+    <button class="btn btn-green" onclick="agregarItem()" style="margin-top:6px">+ Agregar ítem</button>
+
+    <hr class="divider"/>
+
+    <!-- LISTA DE ÍTEMS -->
+    <div id="items-wrap" style="display:none">
+      <div class="sec-label">Ítems de esta cotización</div>
+      <div id="items-list"></div>
+      <div class="total-bar">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:11px;color:#86efac">Total cotización</div>
+            <div style="font-size:28px;font-weight:900;color:#4ade80" id="items-total">$0.00</div>
+          </div>
+          <div style="font-size:11px;color:#64748b;text-align:right" id="items-count"></div>
+        </div>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn btn-primary btn-sm" onclick="guardarComoPedido()" style="flex:1">💾 Guardar pedido</button>
+          <button class="btn btn-green btn-sm" onclick="enviarWhatsApp()" style="flex:1">📲 WA</button>
+          <button class="btn btn-blue btn-sm" onclick="descargarPDF()" style="flex:1">📄 PDF</button>
+        </div>
+        <button class="btn btn-gray btn-sm" onclick="limpiarCotizacion()" style="width:100%;margin-top:8px;font-size:11px">🗑️ Limpiar todo</button>
+      </div>
+    </div>
+
+    <div id="items-empty" style="text-align:center;color:#334155;padding:16px;font-size:12px">
+      Agrega ítems para ver el total
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="card">
+    <div class="card-title">🕐 Últimas cotizaciones</div>
+    <div id="lista-cotizaciones"><div style="text-align:center;color:#334155;padding:20px;font-size:13px">Sin cotizaciones aún</div></div>
+  </div>
+</div>
+
+<!-- ═══ CLIENTES ═══ -->
+<div class="page" id="page-clientes" style="padding-top:16px">
+  <input class="inp" id="search-clientes" placeholder="🔍 Buscar cliente..." oninput="renderClientes()" style="margin-bottom:12px"/>
+  <div id="lista-clientes"></div>
+</div>
+
+<!-- ═══ AJUSTES ═══ -->
+<div class="page" id="page-ajustes" style="padding-top:16px">
+  <div class="card">
+    <div class="card-title">⚙️ Personalizar</div>
+    <div class="sec-label">Nombre de la agencia</div>
+    <input class="inp" id="cfg-agencia" placeholder="Ej: Publicidad Monterrey"/>
+    <div class="sec-label">Tu nombre</div>
+    <input class="inp" id="cfg-nombre" placeholder="Ej: Juan Pérez"/>
+    <div class="sec-label">Teléfono WhatsApp (con código país)</div>
+    <input class="inp" id="cfg-telefono" placeholder="Ej: 521234567890"/>
+    <button class="btn btn-primary" onclick="guardarCfg()">💾 Guardar</button>
+  </div>
+  <div class="card">
+    <div class="card-title">💾 Respaldo</div>
+    <div class="btn-row">
+      <button class="btn btn-green" onclick="exportar()" style="flex:1">📤 Exportar</button>
+      <button class="btn btn-blue" onclick="document.getElementById('file-import').click()" style="flex:1">📥 Importar</button>
+      <input type="file" id="file-import" accept=".json" style="display:none" onchange="importar(event)"/>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nav-btn active" onclick="showPage('cotizador')" id="nav-cotizador"><span class="ico">📐</span>Cotizador</button>
+  <button class="nav-btn" onclick="showPage('clientes')" id="nav-clientes"><span class="ico">👥</span>Clientes</button>
+  <button class="nav-btn" onclick="showPage('ajustes')" id="nav-ajustes"><span class="ico">⚙️</span>Ajustes</button>
+</div>
+
+<!-- MODALES -->
+<div class="modal-bg" id="modal-abono" style="display:none">
+  <div class="modal-box" style="border:2px solid #10b981">
+    <div style="font-size:11px;color:#10b981;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:4px">💰 Registrar abono</div>
+    <div id="ab-nombre" style="font-size:15px;font-weight:900;color:#f1f5f9;margin-bottom:12px"></div>
+    <div style="background:#0f1117;border-radius:8px;padding:10px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#64748b">Total:</span><span style="color:#f59e0b;font-weight:700" id="ab-total"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#64748b">Abonado:</span><span style="color:#10b981;font-weight:700" id="ab-pagado"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px;padding-top:6px;border-top:1px solid #252d40"><span style="color:#86efac;font-weight:700">Pendiente:</span><span style="color:#4ade80;font-weight:900" id="ab-pendiente"></span></div>
+    </div>
+    <div class="sec-label">Monto del abono (USD)</div>
+    <div class="usd-wrap"><span class="usd-sym">$</span><input class="inp usd-inp" id="ab-monto" type="number" placeholder="0.00"/></div>
+    <div class="sec-label">Nota (opcional)</div>
+    <input class="inp" id="ab-nota" placeholder="Ej: Transferencia, efectivo..." style="margin-bottom:14px"/>
+    <div class="btn-row">
+      <button class="btn btn-gray" onclick="closeModal('modal-abono')" style="flex:1">Cancelar</button>
+      <button class="btn btn-green" onclick="confirmarAbono()" style="flex:1">✅ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-del-cliente" style="display:none">
+  <div class="modal-box" style="border:2px solid #ef4444;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">⚠️</div>
+    <div style="font-weight:900;font-size:15px;margin-bottom:6px;color:#f1f5f9">¿Borrar cliente?</div>
+    <div id="del-cliente-name" style="font-size:13px;color:#f59e0b;margin-bottom:8px;font-weight:700"></div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:18px">Se borrarán todos sus pedidos y abonos</div>
+    <div class="btn-row">
+      <button class="btn btn-gray" onclick="closeModal('modal-del-cliente')" style="flex:1">Cancelar</button>
+      <button class="btn" onclick="doDeleteCliente()" style="flex:1;background:#ef4444;color:#fff;font-weight:900">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-del-pedido" style="display:none">
+  <div class="modal-box" style="border:2px solid #ef4444;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">🗑️</div>
+    <div style="font-weight:900;font-size:15px;margin-bottom:8px;color:#f1f5f9">¿Borrar este pedido?</div>
+    <div class="btn-row">
+      <button class="btn btn-gray" onclick="closeModal('modal-del-pedido')" style="flex:1">Cancelar</button>
+      <button class="btn" onclick="doDeletePedido()" style="flex:1;background:#ef4444;color:#fff;font-weight:900">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-del-abono" style="display:none">
+  <div class="modal-box" style="border:2px solid #ef4444;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">🗑️</div>
+    <div style="font-weight:900;font-size:15px;margin-bottom:8px;color:#f1f5f9">¿Borrar este abono?</div>
+    <div class="btn-row">
+      <button class="btn btn-gray" onclick="closeModal('modal-del-abono')" style="flex:1">Cancelar</button>
+      <button class="btn" onclick="doDeleteAbono()" style="flex:1;background:#ef4444;color:#fff;font-weight:900">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-import" style="display:none">
+  <div class="modal-box" style="border:2px solid #3b82f6;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">📥</div>
+    <div style="font-weight:900;font-size:15px;margin-bottom:8px;color:#f1f5f9">¿Importar respaldo?</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:18px">Reemplazará todos los datos actuales</div>
+    <div class="btn-row">
+      <button class="btn btn-gray" onclick="closeModal('modal-import')" style="flex:1">Cancelar</button>
+      <button class="btn btn-blue" onclick="confirmImport()" style="flex:1">Importar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var pedidos=[],abonos=[],cotizaciones=[];
+var cfg={agencia:"Agencia de Publicidad",nombre:"",telefono:""};
+var collapsed={},delClienteId=null,delPedidoId=null,delAbonoId=null;
+var abonoClienteActual=null,pendingImport=null;
+var itemsActuales=[]; // ítems de la cotización en curso
+
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function fmtUSD(n){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(n||0);}
+function fmtDate(iso){return new Date(iso).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+function escH(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function escA(s){return String(s).replace(/'/g,"&#39;");}
+
+function loadData(){
+  try{pedidos=JSON.parse(localStorage.getItem("pub_pedidos")||"[]");}catch{pedidos=[];}
+  try{abonos=JSON.parse(localStorage.getItem("pub_abonos")||"[]");}catch{abonos=[];}
+  try{cotizaciones=JSON.parse(localStorage.getItem("pub_cotizaciones")||"[]");}catch{cotizaciones=[];}
+  try{var c=JSON.parse(localStorage.getItem("pub_cfg")||"{}");cfg=Object.assign({},cfg,c);}catch{}
+}
+function saveAll(){
+  localStorage.setItem("pub_pedidos",JSON.stringify(pedidos));
+  localStorage.setItem("pub_abonos",JSON.stringify(abonos));
+  localStorage.setItem("pub_cotizaciones",JSON.stringify(cotizaciones));
+}
+function totalCliente(c){return pedidos.filter(function(p){return p.cliente===c&&p.status!=="cancelado";}).reduce(function(s,p){return s+p.precio;},0);}
+function abonadoCliente(c){return abonos.filter(function(a){return a.cliente===c;}).reduce(function(s,a){return s+a.monto;},0);}
+function pendienteCliente(c){return Math.max(0,totalCliente(c)-abonadoCliente(c));}
+
+function showPage(p){
+  document.querySelectorAll(".page").forEach(function(x){x.classList.remove("active");});
+  document.querySelectorAll(".nav-btn").forEach(function(x){x.classList.remove("active");});
+  document.getElementById("page-"+p).classList.add("active");
+  document.getElementById("nav-"+p).classList.add("active");
+  if(p==="clientes")renderClientes();
+  if(p==="ajustes")loadCfgForm();
+}
+
+function toast(msg,color){
+  color=color||"#10b981";
+  var t=document.getElementById("toast");
+  t.textContent=msg;t.style.background=color;t.style.opacity="1";
+  setTimeout(function(){t.style.opacity="0";},2500);
+}
+
+function updateHeader(){
+  var clientes=[...new Set(pedidos.map(function(p){return p.cliente;}))];
+  var total=clientes.reduce(function(s,c){return s+pendienteCliente(c);},0);
+  document.getElementById("hdr-total").textContent=fmtUSD(total);
+  document.getElementById("hdr-sub").textContent=cfg.agencia;
+  document.getElementById("hdr-title").textContent="📋 "+(cfg.nombre||"Gestión");
+}
+
+// ══════════════════════════════════
+// COTIZADOR CON ÍTEMS
+// ══════════════════════════════════
+function agregarItem(){
+  var desc=document.getElementById("item-desc").value.trim();
+  var ancho=parseFloat(document.getElementById("item-ancho").value)||0;
+  var alto=parseFloat(document.getElementById("item-alto").value)||0;
+  var precio=parseFloat(document.getElementById("item-precio").value)||0;
+  var cantidad=parseInt(document.getElementById("item-cantidad").value)||1;
+
+  if(!precio){toast("⚠️ Ingresa el precio del ítem","#f59e0b");return;}
+
+  var subtotal=0,detalle="";
+  if(ancho>0&&alto>0){
+    var area=ancho*alto;
+    subtotal=area*precio*cantidad;
+    detalle=ancho+"×"+alto+"m = "+area.toFixed(2)+"m² · "+fmtUSD(precio)+"/m²"+(cantidad>1?" · "+cantidad+" pza":"");
+  } else {
+    subtotal=precio*cantidad;
+    detalle=fmtUSD(precio)+(cantidad>1?" × "+cantidad+" pza":"");
+  }
+
+  itemsActuales.push({id:genId(),desc:desc||"Ítem "+(itemsActuales.length+1),ancho:ancho,alto:alto,precio:precio,cantidad:cantidad,subtotal:subtotal,detalle:detalle});
+
+  // limpiar campos del ítem
+  document.getElementById("item-desc").value="";
+  document.getElementById("item-ancho").value="";
+  document.getElementById("item-alto").value="";
+  document.getElementById("item-precio").value="";
+  document.getElementById("item-cantidad").value="1";
+
+  renderItems();
+  toast("✅ Ítem agregado");
+}
+
+function quitarItem(id){
+  itemsActuales=itemsActuales.filter(function(x){return x.id!==id;});
+  renderItems();
+}
+
+function renderItems(){
+  var total=itemsActuales.reduce(function(s,x){return s+x.subtotal;},0);
+  var wrap=document.getElementById("items-wrap");
+  var empty=document.getElementById("items-empty");
+
+  if(!itemsActuales.length){
+    wrap.style.display="none";
+    empty.style.display="block";
+    return;
+  }
+  wrap.style.display="block";
+  empty.style.display="none";
+
+  document.getElementById("items-total").textContent=fmtUSD(total);
+  document.getElementById("items-count").textContent=itemsActuales.length+" ítem"+(itemsActuales.length!==1?"s":"");
+
+  document.getElementById("items-list").innerHTML=itemsActuales.map(function(item,i){
+    return '<div class="item-row">'+
+      '<div class="item-desc">'+
+        '<div style="font-size:13px;font-weight:700;color:#f1f5f9">'+(i+1)+'. '+escH(item.desc)+'</div>'+
+        '<div style="font-size:11px;color:#64748b;margin-top:2px">'+escH(item.detalle)+'</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
+        '<div class="item-price">'+fmtUSD(item.subtotal)+'</div>'+
+        '<button onclick="quitarItem(\''+item.id+'\')" style="padding:3px 7px;background:#2e0d0d;color:#f87171;border:1px solid #7f1d1d;border-radius:5px;font-size:11px;cursor:pointer;font-family:\'Courier New\',monospace">✕</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+function limpiarCotizacion(){
+  itemsActuales=[];
+  renderItems();
+}
+
+function getTotalItems(){
+  return itemsActuales.reduce(function(s,x){return s+x.subtotal;},0);
+}
+
+function guardarComoPedido(){
+  var cliente=document.getElementById("cot-cliente").value.trim();
+  if(!cliente){toast("⚠️ Ingresa el cliente","#f59e0b");return;}
+  if(!itemsActuales.length){toast("⚠️ Agrega al menos un ítem","#f59e0b");return;}
+
+  var total=getTotalItems();
+  var resumen=itemsActuales.map(function(x,i){return (i+1)+". "+x.desc+" — "+fmtUSD(x.subtotal);}).join(" | ");
+
+  // guardar como UN pedido con el total
+  pedidos.unshift({id:genId(),cliente:cliente,descripcion:resumen,precio:total,status:"pendiente",items:itemsActuales.slice(),createdAt:new Date().toISOString()});
+
+  // guardar en historial cotizaciones
+  cotizaciones.unshift({id:genId(),cliente:cliente,items:itemsActuales.slice(),total:total,fecha:new Date().toISOString()});
+  if(cotizaciones.length>20)cotizaciones=cotizaciones.slice(0,20);
+
+  saveAll();updateHeader();
+  limpiarCotizacion();
+  document.getElementById("cot-cliente").value="";
+  toast("✅ Pedido guardado para "+cliente);
+  showPage("clientes");
+}
+
+function enviarWhatsApp(){
+  var cliente=document.getElementById("cot-cliente").value.trim();
+  if(!cliente){toast("⚠️ Ingresa el cliente","#f59e0b");return;}
+  if(!itemsActuales.length){toast("⚠️ Agrega al menos un ítem","#f59e0b");return;}
+  var total=getTotalItems();
+  var msg="*Cotización — "+(cfg.agencia||"Agencia de Publicidad")+"*\n";
+  msg+="👤 Cliente: "+cliente+"\n\n";
+  msg+="📋 *Detalle:*\n";
+  itemsActuales.forEach(function(x,i){
+    msg+="  "+(i+1)+". "+x.desc+"\n";
+    msg+="     "+x.detalle+" = *"+fmtUSD(x.subtotal)+"*\n";
+  });
+  msg+="\n💰 *Total: "+fmtUSD(total)+"*\n";
+  if(cfg.nombre)msg+="\n_"+cfg.nombre+"_";
+  if(cfg.telefono)msg+=" 📞 "+cfg.telefono;
+  window.open("https://wa.me/"+(cfg.telefono||"")+"?text="+encodeURIComponent(msg),"_blank");
+}
+
+function descargarPDF(){
+  var cliente=document.getElementById("cot-cliente").value.trim();
+  if(!cliente){toast("⚠️ Ingresa el cliente","#f59e0b");return;}
+  if(!itemsActuales.length){toast("⚠️ Agrega al menos un ítem","#f59e0b");return;}
+  var total=getTotalItems();
+  var fecha=new Date().toLocaleDateString("es-MX",{day:"2-digit",month:"long",year:"numeric"});
+  var filas=itemsActuales.map(function(x,i){
+    return '<tr><td>'+(i+1)+'</td><td>'+escH(x.desc)+'</td><td>'+escH(x.detalle)+'</td><td style="text-align:right;font-weight:bold">'+fmtUSD(x.subtotal)+'</td></tr>';
+  }).join("");
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>'+
+    'body{font-family:sans-serif;padding:40px;max-width:700px;margin:0 auto;color:#333}'+
+    'h1{color:#2c3e50;border-bottom:3px solid #e67e22;padding-bottom:10px}'+
+    'h2{color:#e67e22;margin:20px 0 10px}'+
+    'table{width:100%;border-collapse:collapse}'+
+    'th{background:#2c3e50;color:#fff;padding:8px 10px;text-align:left}'+
+    'td{padding:8px 10px;border-bottom:1px solid #eee}'+
+    'tr:nth-child(even){background:#f9f9f9}'+
+    '.total{font-size:22px;font-weight:bold;color:#27ae60;text-align:right;margin-top:20px;padding:15px;background:#d4edda;border-radius:8px}'+
+    '.footer{margin-top:30px;font-size:12px;color:#999;text-align:center}'+
+    '</style></head><body>'+
+    '<h1>'+escH(cfg.agencia||"Agencia de Publicidad")+'</h1>'+
+    '<p style="color:#666">Fecha: '+fecha+'</p>'+
+    '<h2>Cotización — '+escH(cliente)+'</h2>'+
+    '<table><tr><th>#</th><th>Descripción</th><th>Detalle</th><th>Subtotal</th></tr>'+filas+'</table>'+
+    '<div class="total">Total: '+fmtUSD(total)+'</div>'+
+    (cfg.nombre||cfg.telefono?'<div class="footer">'+escH(cfg.nombre||'')+(cfg.telefono?' · 📞 '+cfg.telefono:'')+'</div>':'')+
+    '</body></html>';
+  var blob=new Blob([html],{type:"text/html"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="cotizacion-"+cliente.replace(/\s+/g,"-")+".html";a.click();
+  URL.revokeObjectURL(url);
+  toast("📄 PDF descargado");
+}
+
+function renderCots(){
+  var el=document.getElementById("lista-cotizaciones");
+  if(!cotizaciones.length){el.innerHTML='<div style="text-align:center;color:#334155;padding:20px;font-size:13px">Sin cotizaciones aún</div>';return;}
+  el.innerHTML=cotizaciones.slice(0,6).map(function(c){
+    var n=c.items?c.items.length:1;
+    return '<div style="background:#0f1117;border:1px solid #252d40;border-radius:8px;padding:10px 12px;margin-bottom:6px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+      '<div style="flex:1;min-width:0">'+
+      '<div style="font-weight:700;font-size:13px;color:#f1f5f9">'+escH(c.cliente)+'</div>'+
+      '<div style="font-size:11px;color:#64748b;margin-top:2px">'+n+' ítem'+(n!==1?"s":"")+" · "+fmtDate(c.fecha)+'</div>'+
+      (c.items&&c.items.length?'<div style="font-size:11px;color:#475569;margin-top:3px">'+c.items.map(function(x){return escH(x.desc);}).join(", ")+'</div>':'')+
+      '</div><div style="font-size:15px;font-weight:900;color:#4ade80;flex-shrink:0;margin-left:10px">'+fmtUSD(c.total)+'</div></div></div>';
+  }).join("");
+}
+
+function showCotSugs(){
+  var val=document.getElementById("cot-cliente").value.toLowerCase();
+  if(!val){document.getElementById("cot-sug").style.display="none";return;}
+  var sugs=[...new Set(pedidos.map(function(p){return p.cliente;}))].filter(function(n){return n.toLowerCase().indexOf(val)>-1&&n.toLowerCase()!==val;});
+  var box=document.getElementById("cot-sug");
+  if(!sugs.length){box.style.display="none";return;}
+  box.innerHTML=sugs.map(function(s){return '<div class="sug-item" onclick="pickCotSug(\''+escA(s)+'\')">👤 '+escH(s)+'</div>';}).join("");
+  box.style.display="block";
+}
+function pickCotSug(n){document.getElementById("cot-cliente").value=n;document.getElementById("cot-sug").style.display="none";}
+
+// ══════════════════════════════════
+// CLIENTES
+// ══════════════════════════════════
+function renderClientes(){
+  var q=(document.getElementById("search-clientes")||{value:""}).value.toLowerCase();
+  var clientes=[...new Set(pedidos.map(function(p){return p.cliente;}))].filter(function(c){return !q||c.toLowerCase().indexOf(q)>-1;});
+  clientes.sort(function(a,b){
+    var la=Math.max.apply(null,pedidos.filter(function(p){return p.cliente===a;}).map(function(p){return +new Date(p.createdAt);}));
+    var lb=Math.max.apply(null,pedidos.filter(function(p){return p.cliente===b;}).map(function(p){return +new Date(p.createdAt);}));
+    return lb-la;
+  });
+  var el=document.getElementById("lista-clientes");
+  if(!clientes.length){
+    el.innerHTML='<div style="text-align:center;padding:50px 20px;color:#334155"><div style="font-size:48px;margin-bottom:12px">👥</div><div style="font-size:15px;font-weight:700">'+(pedidos.length===0?"Sin clientes aún":"Sin resultados")+'</div><div style="font-size:12px;color:#475569;margin-top:6px">Crea una cotización para agregar clientes</div></div>';
+    return;
+  }
+  el.innerHTML=clientes.map(function(cliente){
+    var items=pedidos.filter(function(p){return p.cliente===cliente;}).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+    var total=totalCliente(cliente),pagado=abonadoCliente(cliente),pendiente=pendienteCliente(cliente);
+    var pct=total>0?Math.min(100,Math.round(pagado/total*100)):0;
+    var saldado=pendiente<=0&&total>0;
+    var isC=collapsed[cliente];
+    var abonosC=abonos.filter(function(a){return a.cliente===cliente;}).sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+
+    var pedidosHTML=items.map(function(p){
+      var stColor=p.status==="completado"?"#10b981":p.status==="cancelado"?"#ef4444":p.status==="en_proceso"?"#3b82f6":"#f59e0b";
+      var stLabel=p.status==="completado"?"✅ Completado":p.status==="cancelado"?"❌ Cancelado":p.status==="en_proceso"?"🔧 En proceso":"⏳ Pendiente";
+      // mostrar ítems si existen
+      var itemsHTML="";
+      if(p.items&&p.items.length>1){
+        itemsHTML='<div style="margin-top:4px">'+p.items.map(function(x){
+          return '<div style="font-size:11px;color:#475569;padding:2px 0">• '+escH(x.desc)+' — '+fmtUSD(x.subtotal)+'</div>';
+        }).join("")+'</div>';
+      }
+      return '<div class="pedido-item" style="border-left-color:'+stColor+'">'+
+        '<div style="display:flex;justify-content:space-between;gap:8px">'+
+        '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:12px;color:#cbd5e1;margin-bottom:4px;line-height:1.4">'+(p.items&&p.items.length>1?p.items.length+" ítems":escH(p.descripcion))+'</div>'+
+        itemsHTML+
+        '<span class="chip" style="color:'+stColor+';background:'+stColor+'22">'+stLabel+'</span>'+
+        '<span style="font-size:10px;color:#475569;margin-left:6px">'+fmtDate(p.createdAt)+'</span></div>'+
+        '<div style="text-align:right;flex-shrink:0"><div style="font-size:15px;font-weight:900;color:#f59e0b">'+fmtUSD(p.precio)+'</div>'+
+        '<button onclick="confirmDelPedido(\''+p.id+'\')" style="font-size:10px;color:#f87171;background:#2e0d0d;border:1px solid #7f1d1d;border-radius:4px;padding:2px 6px;cursor:pointer;font-family:\'Courier New\',monospace;margin-top:4px">🗑️</button>'+
+        '</div></div></div>';
+    }).join("");
+
+    var abonosHTML=abonosC.length?
+      '<div style="margin-top:8px"><div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Historial abonos</div>'+
+      abonosC.map(function(a){
+        return '<div class="abono-row"><div>'+
+          '<div style="color:#4ade80;font-weight:700">+ '+fmtUSD(a.monto)+'</div>'+
+          (a.nota?'<div style="color:#64748b;font-size:11px">'+escH(a.nota)+'</div>':'')+
+          '<div style="color:#334155;font-size:10px">'+fmtDate(a.fecha)+'</div></div>'+
+          '<button onclick="confirmDelAbono(\''+a.id+'\')" style="padding:3px 7px;background:#2e0d0d;color:#f87171;border:1px solid #7f1d1d;border-radius:5px;font-size:10px;cursor:pointer;font-family:\'Courier New\',monospace">🗑️</button></div>';
+      }).join("")+'</div>':
+      '<div style="font-size:11px;color:#334155;text-align:center;padding:6px 0">Sin abonos registrados</div>';
+
+    return '<div class="client-card">'+
+      '<div class="client-head" onclick="toggleCol(\''+escA(cliente)+'\')">'+
+      '<div style="display:flex;align-items:center;gap:10px;min-width:0">'+
+      '<div style="width:36px;height:36px;border-radius:50%;background:'+(saldado?"#0d2818":"#1a1f2e")+';border:2px solid '+(saldado?"#10b981":"#f59e0b44")+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+(saldado?"✅":"👤")+'</div>'+
+      '<div style="min-width:0"><div style="font-weight:900;font-size:14px;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escH(cliente)+'</div>'+
+      '<div style="font-size:10px;color:#64748b">'+items.length+' pedido'+(items.length!==1?"s":"")+'</div></div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
+      '<div style="text-align:right"><div style="font-size:15px;font-weight:900;color:'+(saldado?"#10b981":"#f87171")+'">'+fmtUSD(pendiente)+'</div>'+
+      '<div style="font-size:10px;color:#475569">'+(saldado?"✅ Saldado":"pendiente")+'</div></div>'+
+      '<div style="color:#475569;font-size:11px">'+(isC?"▶":"▼")+'</div></div></div>'+
+      (!isC?
+        '<div style="padding:10px">'+pedidosHTML+
+        '<div style="background:#0f1117;border-radius:8px;padding:10px;margin-top:6px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+        '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px">Cuenta</div>'+
+        '<button class="btn btn-green btn-sm" onclick="openAbono(\''+escA(cliente)+'\')">💰 Abonar</button></div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:#64748b">Total:</span><span style="color:#f59e0b;font-weight:700">'+fmtUSD(total)+'</span></div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:#64748b">Abonado:</span><span style="color:#10b981;font-weight:700">'+fmtUSD(pagado)+'</span></div>'+
+        '<div class="balance-bar"><div class="balance-fill" style="width:'+pct+'%;background:'+(saldado?"#10b981":"#f59e0b")+'"></div></div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+        '<span style="font-size:11px;color:#475569">'+pct+'% cobrado</span>'+
+        '<span style="font-size:13px;font-weight:900;color:'+(saldado?"#10b981":"#f87171")+'">'+(saldado?"🎉 ¡Saldado!":"Debe: "+fmtUSD(pendiente))+'</span></div>'+
+        abonosHTML+'</div>'+
+        '<div class="btn-row" style="margin-top:8px">'+
+        '<button class="btn btn-green btn-sm" onclick="enviarResumenWA(\''+escA(cliente)+'\')" style="flex:1">📲 Resumen WA</button>'+
+        '<button class="btn btn-red btn-sm" onclick="confirmDelCliente(\''+escA(cliente)+'\')" style="flex:1">🗑️ Borrar cliente</button></div></div>'
+        :"")+'</div>';
+  }).join("");
+}
+
+function toggleCol(n){collapsed[n]=!collapsed[n];renderClientes();}
+
+function openAbono(cliente){
+  abonoClienteActual=cliente;
+  document.getElementById("ab-nombre").textContent="👤 "+cliente;
+  document.getElementById("ab-total").textContent=fmtUSD(totalCliente(cliente));
+  document.getElementById("ab-pagado").textContent=fmtUSD(abonadoCliente(cliente));
+  document.getElementById("ab-pendiente").textContent=fmtUSD(pendienteCliente(cliente));
+  document.getElementById("ab-monto").value="";
+  document.getElementById("ab-nota").value="";
+  document.getElementById("modal-abono").style.display="flex";
+}
+function confirmarAbono(){
+  var monto=parseFloat(document.getElementById("ab-monto").value)||0;
+  if(monto<=0){toast("⚠️ Monto inválido","#f59e0b");return;}
+  abonos.push({id:genId(),cliente:abonoClienteActual,monto:monto,nota:document.getElementById("ab-nota").value.trim(),fecha:new Date().toISOString()});
+  saveAll();updateHeader();renderClientes();
+  closeModal("modal-abono");
+  toast(pendienteCliente(abonoClienteActual)<=0?"🎉 ¡Cuenta liquidada!":"✅ Abono de "+fmtUSD(monto)+" guardado");
+}
+
+function enviarResumenWA(cliente){
+  var items=pedidos.filter(function(p){return p.cliente===cliente&&p.status!=="cancelado";});
+  var total=totalCliente(cliente),pagado=abonadoCliente(cliente),pendiente=pendienteCliente(cliente);
+  var msg="*Resumen de cuenta — "+(cfg.agencia||"Agencia de Publicidad")+"*\n👤 *"+cliente+"*\n\n📋 *Pedidos:*\n";
+  items.forEach(function(p){msg+="  • "+(p.items&&p.items.length>1?p.items.length+" ítems":p.descripcion.substring(0,40))+" — "+fmtUSD(p.precio)+"\n";});
+  msg+="\n💰 Total: *"+fmtUSD(total)+"*\n✅ Abonado: *"+fmtUSD(pagado)+"*\n🔴 Pendiente: *"+fmtUSD(pendiente)+"*";
+  if(pendiente<=0)msg+="\n\n🎉 ¡Cuenta saldada!";
+  if(cfg.nombre)msg+="\n\n_"+cfg.nombre+"_";
+  window.open("https://wa.me/"+(cfg.telefono||"")+"?text="+encodeURIComponent(msg),"_blank");
+}
+
+function confirmDelCliente(c){delClienteId=c;document.getElementById("del-cliente-name").textContent=c;document.getElementById("modal-del-cliente").style.display="flex";}
+function doDeleteCliente(){
+  if(delClienteId){
+    pedidos=pedidos.filter(function(p){return p.cliente!==delClienteId;});
+    abonos=abonos.filter(function(a){return a.cliente!==delClienteId;});
+    saveAll();updateHeader();renderClientes();
+  }
+  delClienteId=null;closeModal("modal-del-cliente");toast("Cliente eliminado","#f59e0b");
+}
+function confirmDelPedido(id){delPedidoId=id;document.getElementById("modal-del-pedido").style.display="flex";}
+function doDeletePedido(){
+  if(delPedidoId){pedidos=pedidos.filter(function(p){return p.id!==delPedidoId;});saveAll();updateHeader();renderClientes();}
+  delPedidoId=null;closeModal("modal-del-pedido");
+}
+function confirmDelAbono(id){delAbonoId=id;document.getElementById("modal-del-abono").style.display="flex";}
+function doDeleteAbono(){
+  if(delAbonoId){abonos=abonos.filter(function(a){return a.id!==delAbonoId;});saveAll();updateHeader();renderClientes();}
+  delAbonoId=null;closeModal("modal-del-abono");toast("Abono eliminado","#f59e0b");
+}
+
+function loadCfgForm(){
+  document.getElementById("cfg-agencia").value=cfg.agencia||"";
+  document.getElementById("cfg-nombre").value=cfg.nombre||"";
+  document.getElementById("cfg-telefono").value=cfg.telefono||"";
+}
+function guardarCfg(){
+  cfg.agencia=document.getElementById("cfg-agencia").value.trim()||"Agencia de Publicidad";
+  cfg.nombre=document.getElementById("cfg-nombre").value.trim();
+  cfg.telefono=document.getElementById("cfg-telefono").value.trim();
+  localStorage.setItem("pub_cfg",JSON.stringify(cfg));
+  updateHeader();toast("✅ Configuración guardada");
+}
+
+function exportar(){
+  if(!pedidos.length&&!abonos.length){toast("⚠️ Sin datos","#f59e0b");return;}
+  var fecha=new Date().toISOString().slice(0,10);
+  var blob=new Blob([JSON.stringify({version:5,fecha:fecha,pedidos:pedidos,abonos:abonos,cfg:cfg},null,2)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="respaldo-publicidad-"+fecha+".json";a.click();
+  URL.revokeObjectURL(url);toast("✅ Respaldo exportado");
+}
+function importar(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{pendingImport=JSON.parse(ev.target.result);document.getElementById("modal-import").style.display="flex";}
+    catch(err){toast("❌ Archivo inválido","#ef4444");}
+    e.target.value="";
+  };
+  reader.readAsText(file);
+}
+function confirmImport(){
+  if(!pendingImport)return;
+  pedidos=pendingImport.pedidos||[];
+  abonos=pendingImport.abonos||[];
+  if(pendingImport.cfg)cfg=Object.assign({},cfg,pendingImport.cfg);
+  localStorage.setItem("pub_cfg",JSON.stringify(cfg));
+  pendingImport=null;saveAll();updateHeader();
+  closeModal("modal-import");toast("✅ Datos importados");
+}
+
+function closeModal(id){document.getElementById(id).style.display="none";}
+
+loadData();renderCots();updateHeader();
+document.addEventListener("click",function(e){
+  if(!e.target.closest("#cot-cliente")&&!e.target.closest("#cot-sug"))
+    document.getElementById("cot-sug").style.display="none";
+});
+</script>
+</body>
+</html>
